@@ -36,7 +36,7 @@ helps a lot:
     Pieces = Enum('Pieces', 'KING QUEEN ROOK BISHOP KNIGHT PAWN')
 
     # Or an Enum with custom values.
-    d = dict(KING='king', QUEEN='queen', ROOK='rook', BISHOP='bishop', KNIGHT='knight', PAWN='pawn')
+    d = dict(KING = 'king', QUEEN = 'queen', ROOK = 'rook', BISHOP = 'bishop', KNIGHT = 'knight', PAWN = 'pawn')
     Pieces = Enum('Pieces', d)
 
 But even that solution is more than one usually wants. We started with the very
@@ -106,7 +106,7 @@ Various naming or stylistic conventions are supported:
 Values can be declared explicitly in two ways:
 
     # A dict.
-    d = dict(king=0, queen=9, rook=5, bishop=3, knight=3, pawn=1)
+    d = dict(king = 0, queen = 9, rook = 5, bishop = 3, knight = 3, pawn = 1)
     Pieces = constants('Pieces', d)
 
     # A callable taking an INDEX and NAME and returning a VALUE.
