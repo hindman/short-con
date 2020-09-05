@@ -8,12 +8,7 @@ def tr():
 
 class TestResource(object):
 
-    def __init__(self):
-        pass
-
-    def dumpj(self, val = None, label = None):
-        val = to_json(val, indent = 4)
-        self.dump(val, label)
+    CHESS_PIECES = 'KING QUEEN ROOK BISHOP KNIGHT PAWN'
 
     def dump(self, val = None, label = None):
         if label:

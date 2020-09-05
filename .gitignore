@@ -19,6 +19,7 @@
 /htmlcov/
 /.tox/
 /.pytest_cache/
+/.coverage
 
 # Junk files.
 .DS_Store

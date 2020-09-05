@@ -29,9 +29,11 @@ reqs = [
 extras = {
     'test' : [
         'pytest',
+        'pytest-cov',
         'tox',
     ],
     'dev' : [
+        'invoke',
         'pycodestyle',
     ],
 }
