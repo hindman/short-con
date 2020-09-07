@@ -11,11 +11,11 @@ def test(c, cov = False):
         c.run('open htmlcov/index.html')
 
 @task
-def dist(c, upload = False):
+def dist(c, upload = False, repo = 'pypi'):
     c.run('rm -rf dist')
     c.run('python setup.py sdist bdist_wheel')
     c.run('echo')
     c.run('twine check dist/*')
     if upload:
-        c.run('twine upload dist/*')
+        c.run(f'twine upload --repo {repo} dist/*')
 
