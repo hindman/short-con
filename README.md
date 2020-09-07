@@ -116,7 +116,7 @@ Values can be declared explicitly in two ways:
 
 Other customization of the attrs-based class can be passed through as well. The
 `constants()` function has the following signature, and the `bases` and
-`attributes_arguments` are passed through to [attr.make_class][attrs_url].
+`attributes_arguments` are passed through to [attr.make_class][make_class_url].
 
     def constants(name, attrs, value_style = None, bases = (object,), **attributes_arguments):
         ...
