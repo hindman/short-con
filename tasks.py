@@ -17,5 +17,5 @@ def dist(c, upload = False, repo = 'pypi'):
     c.run('echo')
     c.run('twine check dist/*')
     if upload:
-        c.run(f'twine upload --repo {repo} dist/*')
+        c.run(f'twine upload -r {repo} dist/*')
 
