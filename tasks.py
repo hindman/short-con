@@ -8,6 +8,5 @@ def test(c, cov = False):
     cmd = 'pytest -s -v {} tests'.format(cov_args)
     c.run(cmd)
     if cov:
-        c.run('rm -rf htmlcov')
         c.run('open htmlcov/index.html')
 

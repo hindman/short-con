@@ -40,13 +40,13 @@ helps a lot:
     Pieces = Enum('Pieces', d)
 
 But even that solution is more than one usually wants. We started with the very
-simple goal of removing (often repeated) magic strings, numbers, and other
-simple values from the code and grouping those values in meaningful ways. But
-we ended up being forced to deal with an intermediate object that serves almost
-no purpose. Every time you want access to an underlying value, you have to dig
-down an extra level: for example, `Pieces.QUEEN.value` as opposed to just
-`Pieces.QUEEN`. The primitive value (an immutable string) is already constant
-robust enough for the vast majority of use cases. Very little is gained by
+simple goal of removing magic strings, numbers, and other simple values from
+the code and grouping those values in meaningful ways. But we ended up being
+forced to deal with an intermediate object that serves almost no purpose. Every
+time you want access to an underlying value, you have to dig down an extra
+level: for example, `Pieces.QUEEN.value` as opposed to just `Pieces.QUEEN`. The
+primitive value (an immutable string) is already constant-enough and
+robust-enough for the vast majority of use cases. Very little is gained by
 forcing coders to interact with an intermediate `enum` object that was never a
 goal to begin with.
 
@@ -71,8 +71,9 @@ space-delimited string.
     Pieces = constants('Pieces', xs)
     Pieces = constants('Pieces', tuple(xs))
 
-By default, `constants()` creates a frozen attrs-based class named `Pieces` and
-returns an instance of it. That instance is immutable enough for most use cases:
+By default, `constants()` creates a frozen attrs-based class of the given name
+and returns an instance of it. That instance is immutable enough for most use
+cases:
 
     Pieces.QUEEN = 'foobar'   # Fails with attrs.FrozenInstanceError.
 
@@ -89,7 +90,7 @@ The object is directly iterable and convertible to other collections:
     d = dict(Pieces)
     tups = list(Pieces)
 
-Various naming or stylistic conventions are supported:
+Various stylistic conventions are supported:
 
     NAMES = 'KING QUEEN ROOK BISHOP KNIGHT PAWN'
     names = NAMES.lower()
@@ -113,18 +114,17 @@ Values can be declared explicitly in two ways:
     f = lambda i, name: '{}-{}'.format(name.lower(), i + 1)
     Pieces = constants('Pieces', NAMES, value_style = f)
 
-Other customization of the attrs-based class can be passed through as well.
-The `constants()` function has the following signature:
-
-    # The bases and attributes_arguments are passed through to attr.make_class().
+Other customization of the attrs-based class can be passed through as well. The
+`constants()` function has the following signature, and the `bases` and
+`attributes_arguments` are passed through to `attr.make_class()`.
 
     def constants(name, attrs, value_style = None, bases = (object,), **attributes_arguments):
         ...
 
 ----
 
-[attrs_url]: https://www.attrs.org/en/stable/
 [stackoverflow_url]: https://stackoverflow.com/questions/2682745
 [enum_url]: https://docs.python.org/3/library/enum.html
+[attrs_url]: https://www.attrs.org/en/stable/
 [make_class_url]: https://www.attrs.org/en/stable/api.html#attr.make_class
 
