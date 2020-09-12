@@ -1,0 +1,50 @@
+A better approach to creating constants in Python is to take inspiration from
+the excellent [attrs](https://www.attrs.org/en/stable/) library, which helps
+Python programmers create *classes without boilerplate*. The
+[short-con](https://github.com/hindman/short-con) package does the same for
+constants by providing a convenience wrapper around
+[attr.make_class](https://www.attrs.org/en/stable/api.html#attr.make_class).
+
+Attribute names can be supplied in the form of a list, tuple, or
+space-delimited string.
+
+    from short_con import constants
+
+    NAMES = 'KING QUEEN ROOK BISHOP KNIGHT PAWN'
+    xs = NAMES.split()
+
+    Pieces = constants('Pieces', NAMES)       # All of these do the same thing.
+    Pieces = constants('Pieces', xs)
+    Pieces = constants('Pieces', tuple(xs))
+
+By default, `constants()` creates a frozen attrs-based class of the given name
+and returns an instance of it:
+
+    Pieces.QUEEN = 'foobar'   # Fails with attrs.FrozenInstanceError.
+
+The underlying values are directly accessible -- no need to interact with some
+bureaucratic object sitting in the middle:
+
+    assert Pieces.QUEEN == 'QUEEN'
+
+    # For comparison, constants created by the built-in enum library
+    # force this heavier usage pattern.
+    assert Pieces.QUEEN.value == 'QUEEN'
+
+The object is directly iterable and convertible to other collections:
+
+    for name, value in Pieces:
+        print(name, value)
+
+    d = dict(Pieces)
+    tups = list(Pieces)
+
+Values can be declared explicitly in a few ways. The simplest is by `kwargs`:
+
+    from short_con import cons
+
+    Pieces = cons('Pieces', king = 0, queen = 9, rook = 5, bishop = 3, knight = 3, pawn = 1)
+
+Various stylistic conventions are supported (uppercase or lowercase attribute
+names along with enum-style values).
+

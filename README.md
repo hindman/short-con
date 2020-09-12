@@ -54,8 +54,8 @@ goal to begin with.
 #### An easier way
 
 A better approach is to take inspiration from the excellent [attrs
-library][attrs_url], which helps Python programmers create "classes without
-boilerplate". The short-con project provides a small convenience wrapper around
+library][attrs_url], which helps Python programmers create *classes without
+boilerplate*. The short-con project provides a small convenience wrapper around
 [attr.make_class][make_class_url] to create handy vehicles for constants.
 
 Attribute names can be supplied in the form of a list, tuple, or
@@ -104,11 +104,15 @@ Various stylistic conventions are supported:
     # An enumeration from 1 through N.
     Pieces = constants('Pieces', NAMES, value_style = 'enum')
 
-Values can be declared explicitly in two ways:
+Values can be declared explicitly in three ways:
 
     # A dict.
     d = dict(king = 0, queen = 9, rook = 5, bishop = 3, knight = 3, pawn = 1)
     Pieces = constants('Pieces', d)
+
+    # Via kwargs, using the cons() utility function.
+    # Note that it does not support value_style, bases, or attributes_arguments.
+    Pieces = cons('Pieces', king = 0, queen = 9, rook = 5, bishop = 3, knight = 3, pawn = 1)
 
     # A callable taking an INDEX and NAME and returning a VALUE.
     f = lambda i, name: '{}-{}'.format(name.lower(), i + 1)

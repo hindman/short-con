@@ -4,7 +4,8 @@ import attr
 import pytest
 import sys
 
-from short_con.main import constants, ERR_TYPE, ERR_VALUE
+from short_con import constants, cons
+from short_con.main import ERR_TYPE, ERR_VALUE
 
 def test_basic_creation(tr):
     # Attribute names for some constants: as a str and as a list.
@@ -27,6 +28,11 @@ def test_basic_creation(tr):
             assert sorted(list(Pieces)) == sorted(exp_list)
         else:
             assert list(Pieces) == exp_list
+
+def test_cons(tr):
+    d = tr.PIECE_VALUES
+    PVals = cons('PVals', **d)
+    assert dict(PVals) == d
 
 def test_value_styles(tr):
     cps = tr.CHESS_PIECES

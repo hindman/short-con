@@ -39,7 +39,7 @@ def constants(name, attrs, value_style = None, bases = (object,), **attributes_a
 
     # Create the attrs class.
     attributes_arguments.setdefault('frozen', True)
-    cls_name = name if sys.version_info.major >= 3 else name.encode('utf-8') 
+    cls_name = name if sys.version_info.major >= 3 else name.encode('utf-8')
     cls = attr.make_class(cls_name, names, bases, **attributes_arguments)
 
     # Add support for direct iteration.
@@ -47,4 +47,9 @@ def constants(name, attrs, value_style = None, bases = (object,), **attributes_a
 
     # Return an instance holding the constants.
     return cls(*vals)
+
+def cons(name, **kwargs):
+    # A convenience function when you want to create constants via kwargs
+    # and you don't need to customize `bases` or `attributes_arguments`.
+    return constants(name, kwargs)
 
