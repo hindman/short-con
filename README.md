@@ -63,12 +63,12 @@ Constant names and values can be declared explicitly in two ways:
 By default, `constants()` and `cons()` create an attrs-based class of the given
 name and returns a frozen instance of it:
 
-    Pieces.QUEEN = 'foobar'   # Fails with attrs.FrozenInstanceError.
+    Pieces.QUEEN = 42   # Fails with attrs.FrozenInstanceError.
 
 The underlying values are directly accessible -- no need to interact with some
 bureaucratic object standing guard in the middle:
 
-    assert Pieces.QUEEN == 'QUEEN'
+    assert Pieces.QUEEN == 9
 
 The object is directly iterable and convertible to other collections:
 
