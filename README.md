@@ -6,79 +6,67 @@
 When your Python code needs constants, the process often starts simply enough
 with the worthy goal of getting the magic strings and numbers out of your code.
 
-    KING = 'king'
-    QUEEN = 'queen'
-    ROOK = 'rook'
-    BISHOP = 'bishop'
-    KNIGHT = 'knight'
-    PAWN = 'pawn'
+    BLACK = 'black'
+    WHITE = 'white'
+
+    KING = 0
+    QUEEN = 9
+    ROOK = 5
+    BISHOP = 3
+    KNIGHT = 3
+    PAWN = 1
 
 At some point, you might need to operate on those constants in groups, so you
-add some derived constants:
+add some derived constants. We've hardly gotten out of the gate and the process
+already seems a bit tedious.
 
+    COLORS = (BLACK, WHITE)
     PIECES = (KING, QUEEN, ROOK, BISHOP, KNIGHT, PAWN)
 
-We've hardly gotten out of the gate and the process already seems a bit tedious.
-
-In addition, since none of those entities are very constant-like, clever Python
-programmers have created [many ways][stackoverflow_url] to create constants
-beyond those simple approaches. Usually, the focus of those efforts is on
-ratcheting up immutability. But achieving truly constant values is somewhat
-beside the point in Python. The real annoyances have always more practical in
-nature.
-
-Starting in Python 3.4, the [enum library][enum_url] became available, and it
-helps a lot:
+Starting in Python 3.4, the [enum library][enum_url] became available:
 
     from enum import Enum
 
-    # A simple Enum with values from 1 through N.
-    Pieces = Enum('Pieces', 'KING QUEEN ROOK BISHOP KNIGHT PAWN')
+    Colors = Enum('Colors', 'BLACK WHITE')
+    Pieces = Enum('Pieces', dict(KING = 0, QUEEN = 9, ROOK = 5, BISHOP = 3, KNIGHT = 3, PAWN = 1))
 
-    # Or an Enum with custom values.
-    d = dict(KING = 'king', QUEEN = 'queen', ROOK = 'rook', BISHOP = 'bishop', KNIGHT = 'knight', PAWN = 'pawn')
-    Pieces = Enum('Pieces', d)
+Although that library helps a lot, there is one annoyance. We started with the
+simple goal of wrangling magic strings and values, but we end up forced to
+interact with special `enum` instances:
 
-But even that solution is more than one usually wants. We started with the very
-simple goal of removing magic strings, numbers, and other simple values from
-the code and grouping those values in meaningful ways. But we ended up being
-forced to deal with an intermediate object that serves almost no purpose. Every
-time you want access to an underlying value, you have to dig down an extra
-level: for example, `Pieces.QUEEN.value` as opposed to just `Pieces.QUEEN`. The
-primitive value (an immutable string) is already constant-enough and
-robust-enough for the vast majority of use cases. Very little is gained by
-forcing coders to interact with an intermediate `enum` object that was never a
-goal to begin with.
+    Pieces.QUEEN        # Will this give us the number we want? No.
+    Pieces.QUEEN.value  # Dig a level deeper, friend.
+
+Although there are use cases where such formalism might be desirable, in
+the vast majority of practical programming situations the intermediate object
+is just a hassle -- a form of *robustness theater* rather than an actual best
+practice with concrete benefits.
 
 
 #### An easier way
 
 A better approach is to take inspiration from the excellent [attrs
 library][attrs_url], which helps Python programmers create *classes without
-boilerplate*. The short-con project provides a small convenience wrapper around
-[attr.make_class][make_class_url] to create handy vehicles for constants.
+boilerplate*. The short-con project does the same for constants by providing a
+small wrapper around [attr.make_class][make_class_url].
 
-Attribute names can be supplied in the form of a list, tuple, or
-space-delimited string.
+Constant names and values can be declared explicitly in two ways:
 
-    from short_con import constants
+    from short_con import constants, cons
 
-    NAMES = 'KING QUEEN ROOK BISHOP KNIGHT PAWN'
-    xs = NAMES.split()
+    # Via a dict.
+    Pieces = constants('Pieces', dict(king = 0, queen = 9, rook = 5, bishop = 3, knight = 3, pawn = 1))
 
-    # All of these do the same thing.
-    Pieces = constants('Pieces', NAMES)
-    Pieces = constants('Pieces', xs)
-    Pieces = constants('Pieces', tuple(xs))
+    # Via kwargs, using the cons() utility function.
+    Pieces = cons('Pieces', king = 0, queen = 9, rook = 5, bishop = 3, knight = 3, pawn = 1)
 
-By default, `constants()` creates a frozen attrs-based class of the given name
-and returns an instance of it. That instance is immutable enough for most use
-cases:
+By default, `constants()` and `cons()` create an attrs-based class of the given
+name and returns a frozen instance of it:
 
     Pieces.QUEEN = 'foobar'   # Fails with attrs.FrozenInstanceError.
 
 The underlying values are directly accessible -- no need to interact with some
-bureaucratic object sitting in the middle:
+bureaucratic object standing guard in the middle:
 
     assert Pieces.QUEEN == 'QUEEN'
 
@@ -90,33 +78,30 @@ The object is directly iterable and convertible to other collections:
     d = dict(Pieces)
     tups = list(Pieces)
 
-Various stylistic conventions are supported:
+For situations when the values are the same as (or can be derived from) the
+attribute names, usage is even more compact. Just supply names as a
+space-delimited string, list, or tuple.
+
+    NAMES = 'KING QUEEN ROOK BISHOP KNIGHT PAWN'
+    nms = NAMES.split()
+
+    Pieces = constants('Pieces', NAMES)      # All of these do the same thing.
+    Pieces = constants('Pieces', nms)
+    Pieces = constants('Pieces', tuple(nms))
+
+The name-based usages support a few stylistic conventions:
 
     NAMES = 'KING QUEEN ROOK BISHOP KNIGHT PAWN'
     names = NAMES.lower()
 
-    # Uppercase names, lowercase values.
-    Pieces = constants('Pieces', NAMES, value_style = 'lower')
+    Pieces = constants('Pieces', NAMES, value_style = 'lower') # Uppercase names, lowercase values.
+    Pieces = constants('Pieces', names, value_style = 'upper') # The reverse.
+    Pieces = constants('Pieces', NAMES, value_style = 'enum')  # An enumeration from 1 through N.
 
-    # Or the reverse.
-    Pieces = constants('Pieces', names, value_style = 'upper')
+Or the values can be computed from the names by supplying a two-argument
+callable taking an index and name and returning a value:
 
-    # An enumeration from 1 through N.
-    Pieces = constants('Pieces', NAMES, value_style = 'enum')
-
-Values can be declared explicitly in three ways:
-
-    # A dict.
-    d = dict(king = 0, queen = 9, rook = 5, bishop = 3, knight = 3, pawn = 1)
-    Pieces = constants('Pieces', d)
-
-    # Via kwargs, using the cons() utility function.
-    # Note that it does not support value_style, bases, or attributes_arguments.
-    Pieces = cons('Pieces', king = 0, queen = 9, rook = 5, bishop = 3, knight = 3, pawn = 1)
-
-    # A callable taking an INDEX and NAME and returning a VALUE.
-    f = lambda i, name: '{}-{}'.format(name.lower(), i + 1)
-    Pieces = constants('Pieces', NAMES, value_style = f)
+    Pieces = constants('Pieces', NAMES, value_style = lambda i, name: f'{name.lower()}-{i + 1}')
 
 Other customization of the attrs-based class can be passed through as well. The
 `constants()` function has the following signature, and the `bases` and
@@ -124,6 +109,7 @@ Other customization of the attrs-based class can be passed through as well. The
 
     def constants(name, attrs, value_style = None, bases = (object,), **attributes_arguments):
         ...
+
 
 ----
 
