@@ -8,6 +8,16 @@ ERR_TYPE = 'attrs argument must be a str, list, tuple, or dict.'
 ERR_VALUE = "value_style argument must be None, 'upper', 'lower', 'enum', or function."
 
 def constants(name, attrs, value_style = None, bases = (object,), **attr_arguments):
+    '''
+    Returns a dict-like container of constants, as a frozen instance of an attrs class.
+
+    Arguments:
+    name -- Class name.
+    attrs -- Dict mapping names to constant values or a tuple/list/string of names.
+    value_style -- Used to create values from names (None, 'upper', 'lower', 'enum', or callable).
+    bases -- Passed to attr.make_class().
+    **attr_arguments -- Passed to attr.make_class().
+    '''
 
     # Set up two parallel lists: attribute names and instance values.
     if isinstance(attrs, dict):
@@ -60,6 +70,13 @@ def constants(name, attrs, value_style = None, bases = (object,), **attr_argumen
     return cls(*vals)
 
 def cons(name, **kwargs):
+    '''
+    Returns a dict-like container of constants, as a frozen instance of an attrs class.
+
+    Arguments:
+    name -- Class name.
+    **kwargs -- Passed as a dict to short_con.constants()
+    '''
     # A convenience function when you want to create constants via kwargs
     # and you don't need to customize `bases` or `attr_arguments`.
     return constants(name, kwargs)
