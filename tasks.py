@@ -27,7 +27,7 @@ def test(c, cov = False):
         c.run('open htmlcov/index.html')
 
 @task
-def publish(c, upload = False, repo = 'pypi'):
+def dist(c, publish = False, repo = 'pypi'):
     '''
     Create software distribution, optionally publishing it to pypi.
     '''
@@ -35,7 +35,7 @@ def publish(c, upload = False, repo = 'pypi'):
     c.run('python setup.py sdist bdist_wheel')
     c.run('echo')
     c.run('twine check dist/*')
-    if upload:
+    if publish:
         c.run(f'twine upload -r {repo} dist/*')
 
 @task
