@@ -34,6 +34,39 @@ def test_cons(tr):
     PVals = cons('PVals', **d)
     assert dict(PVals) == d
 
+def test_dict_methods_added(tr):
+    d = tr.PIECE_VALUES
+    PVals = cons('PVals', **d)
+    # keys() and values().
+    ks = PVals.keys()
+    vs = PVals.values()
+    assert isinstance(ks, tuple)
+    assert isinstance(vs, tuple)
+    assert sorted(ks) == sorted(d)
+    assert sorted(vs) == sorted(d.values())
+    # get().
+    assert PVals.get('QUEEN') == d['QUEEN']
+    assert PVals.get('blort', 123) == 123
+    assert PVals.get('blort') is None
+    # Get item.
+    assert PVals['ROOK'] == d['ROOK']
+    with pytest.raises(KeyError):
+        PVals['blort']
+    # Length.
+    assert len(PVals) == len(d)
+    # Contains.
+    assert 'ROOK' in PVals
+    assert 'blort' not in PVals
+
+def test_dict_methods_not_added(tr):
+    # In this case, keys(), values(), get() are not added to the class.
+    d = dict(tr.PIECE_VALUES)
+    d.update(keys = 11, values = 22, get = 33)
+    PVals = cons('PVals', **d)
+    assert PVals.keys == 11
+    assert PVals.values == 22
+    assert PVals.get == 33
+
 def test_value_styles(tr):
     cps = tr.CHESS_PIECES
 

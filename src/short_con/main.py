@@ -7,7 +7,7 @@ import sys
 ERR_TYPE = 'attrs argument must be a str, list, tuple, or dict.'
 ERR_VALUE = "value_style argument must be None, 'upper', 'lower', 'enum', or function."
 
-def constants(name, attrs, value_style = None, bases = (object,), **attributes_arguments):
+def constants(name, attrs, value_style = None, bases = (object,), **attr_arguments):
 
     # Set up two parallel lists: attribute names and instance values.
     if isinstance(attrs, dict):
@@ -38,18 +38,29 @@ def constants(name, attrs, value_style = None, bases = (object,), **attributes_a
             raise ValueError(ERR_VALUE)
 
     # Create the attrs class.
-    attributes_arguments.setdefault('frozen', True)
+    attr_arguments['frozen'] = True
     cls_name = name if sys.version_info.major >= 3 else name.encode('utf-8')
-    cls = attr.make_class(cls_name, names, bases, **attributes_arguments)
+    cls = attr.make_class(cls_name, names, bases, **attr_arguments)
 
-    # Add support for direct iteration.
-    cls.__iter__ = lambda self: iter(attr.asdict(self).items())
+    # Add support for iteration and getting a value by name.
+    cls.__iter__ = lambda self: iter(self.__dict__.items())
+    cls.__getitem__ = lambda self, k: self.__dict__[k]
+    cls.__len__ = lambda self: len(self.__dict__)
+    cls.__contains__ = lambda self, k: k in self.__dict__
+
+    # If no conflicts, add support for read-only dict methods.
+    if 'keys' not in names:
+        cls.keys = lambda self: tuple(self.__dict__.keys())
+    if 'values' not in names:
+        cls.values = lambda self: tuple(self.__dict__.values())
+    if 'get' not in names:
+        cls.get = lambda self, *xs: self.__dict__.get(*xs)
 
     # Return an instance holding the constants.
     return cls(*vals)
 
 def cons(name, **kwargs):
     # A convenience function when you want to create constants via kwargs
-    # and you don't need to customize `bases` or `attributes_arguments`.
+    # and you don't need to customize `bases` or `attr_arguments`.
     return constants(name, kwargs)
 

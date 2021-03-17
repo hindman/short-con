@@ -1,5 +1,18 @@
 #! /usr/bin/env python
 
+####
+#
+# General:
+#   invoke [--dry] TASK [OPTIONS]
+#   invoke --list
+#   invoke --help TASK
+#
+# Tasks:
+#   invoke test [--cov]
+#   invoke publish
+#
+####
+
 from invoke import task
 
 @task
@@ -11,7 +24,7 @@ def test(c, cov = False):
         c.run('open htmlcov/index.html')
 
 @task
-def dist(c, upload = False, repo = 'pypi'):
+def publish(c, upload = False, repo = 'pypi'):
     c.run('rm -rf dist')
     c.run('python setup.py sdist bdist_wheel')
     c.run('echo')
