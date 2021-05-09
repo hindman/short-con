@@ -11,7 +11,7 @@ import sys
 project_name = 'short-con'
 package_name = project_name.replace('-', '_')
 repo_name    = project_name
-description  = 'Constants without boilerplate'
+description  = 'Constants collections without boilerplate'
 url          = 'https://github.com/hindman/' + repo_name
 author       = 'Monty Hindman'
 author_email = 'mhindman@gmail.com'
