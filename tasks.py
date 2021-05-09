@@ -15,16 +15,26 @@
 
 from invoke import task
 
+LIB = 'short_con'
+
 @task
 def test(c, cov = False):
     '''
     Run pytest, optional opening coverage report.
     '''
-    cov_args = '--cov short_con --cov-report html' if cov else ''
-    cmd = 'pytest -s -v {} tests'.format(cov_args)
+    cov_args = f'--cov {LIB} --cov-report html' if cov else ''
+    cmd = 'pytest --color yes -s -v {} tests'.format(cov_args)
     c.run(cmd)
     if cov:
         c.run('open htmlcov/index.html')
+
+@task
+def tox(c):
+    '''
+    Run tox for the project
+    '''
+    d = dict(PYENV_VERSION = '2.7.18:3.9.4')
+    c.run('tox', env = d)
 
 @task
 def dist(c, publish = False, repo = 'pypi'):
@@ -39,29 +49,35 @@ def dist(c, publish = False, repo = 'pypi'):
         c.run(f'twine upload -r {repo} dist/*')
 
 @task
-def bump(c, t = 'minor', local = False):
+def bump(c, kind = 'minor', local = False):
     '''
-    Version bump (minor, major, or patch). Commits and pushes unless --local.
+    Version bump: minor unless --kind major|patch. Commits/pushes unless --local.
     '''
     # Validate.
-    bump_types = dict(major = 0, minor = 1, patch = 2)
-    assert t in bump_types
+    assert kind in ('major', 'minor', 'patch')
+
     # Get current version as a 3-element list.
-    path = 'src/short_con/version.py'
+    path = f'src/{LIB}/version.py'
     lines = open(path).readlines()
     version = lines[0].split("'")[1]
     major, minor, patch = [int(x) for x in version.split('.')]
+
     # Compute new version.
     tup = (
-        (major + 1, 0, 0) if t == 'major' else
-        (major, minor + 1, 0) if t == 'minor' else
-        (minor, minor, patch + 1)
+        (major + 1, 0, 0) if kind == 'major' else
+        (major, minor + 1, 0) if kind == 'minor' else
+        (major, minor, patch + 1)
     )
     version = '.'.join(str(x) for x in tup)
+
     # Write new version file.
-    with open(path, 'w') as fh:
-        fh.write(f"__version__ = '{version}'\n\n")
-    print(f'Bumped to {version}.')
+    if c['run']['dry']:
+        print(f'# Dry run: modify version.py: {version}')
+    else:
+        with open(path, 'w') as fh:
+            fh.write(f"__version__ = '{version}'\n\n")
+        print(f'Bumped to {version}.')
+
     # Commit and push.
     if not local:
         c.run(f"git commit {path} -m 'Version {version}'")
