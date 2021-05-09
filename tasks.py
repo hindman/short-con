@@ -3,13 +3,16 @@
 ####
 #
 # General:
-#   invoke [--dry] TASK [OPTIONS]
-#   invoke --list
-#   invoke --help TASK
+#   inv [--dry] TASK [OPTIONS]
+#   inv --list
+#   inv --help TASK
 #
 # Tasks:
-#   invoke test [--cov]
-#   invoke publish
+#   inv tags
+#   inv test [--cov]
+#   inv dist [--publish] [--test]
+#   inv tox
+#   inv bump [--kind <major|minor|patch>] [--local]
 #
 ####
 
@@ -37,10 +40,11 @@ def tox(c):
     c.run('tox', env = d)
 
 @task
-def dist(c, publish = False, repo = 'pypi'):
+def dist(c, publish = False, test = False):
     '''
-    Create software distribution, optionally publishing it to pypi.
+    Create distribution, optionally publishing to pypi or testpypi.
     '''
+    repo = 'testpypi' if test else 'pypi'
     c.run('rm -rf dist')
     c.run('python setup.py sdist bdist_wheel')
     c.run('echo')
