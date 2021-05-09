@@ -1,4 +1,4 @@
-## short-con: Constants without boilerplate
+## short-con: Constants collections without boilerplate
 
 
 #### Motivation
@@ -34,12 +34,12 @@ Although that library helps a lot, there is one annoyance. We started with the
 simple goal of wrangling magic strings and values, but we end up forced to
 interact with special `enum` instances:
 
-    Pieces.QUEEN        # Will this give us the number we want? No.
+    Pieces.QUEEN        # Will this give us the value we want? No.
     Pieces.QUEEN.value  # Dig a level deeper, friend.
 
 Although there are use cases where such formalism might be desirable, in
 the vast majority of practical programming situations the intermediate object
-is just a hassle -- a form of *robustness theater* rather than an actual best
+is just a hassle — a form of *robustness theater* rather than an actual best
 practice with concrete benefits.
 
 
@@ -47,8 +47,8 @@ practice with concrete benefits.
 
 A better approach is to take inspiration from the excellent [attrs
 library][attrs_url], which helps Python programmers create *classes without
-boilerplate*. The short-con project does the same for constants by providing a
-small wrapper around [attr.make_class][make_class_url].
+boilerplate*. The short-con project does the same for constants collections by
+providing a small wrapper around [attr.make_class][make_class_url].
 
 Constant names and values can be declared explicitly in two ways:
 
@@ -65,7 +65,7 @@ and return a frozen instance of it:
 
     Pieces.queen = 42   # Fails with attrs.FrozenInstanceError.
 
-The underlying values are directly accessible -- no need to interact with some
+The underlying values are directly accessible — no need to interact with some
 bureaucratic object standing guard in the middle:
 
     Pieces.queen == 9   # True
@@ -93,8 +93,8 @@ The object also supports relevant read-only dict behaviors:
     Pieces.get('blort')  # None
 
 For situations when the values are the same as (or can be derived from) the
-attribute names, usage is even more compact. Just supply names as a
-space-delimited string, list, or tuple.
+attribute names, usage is even more compact. Just supply names as a list,
+tuple, or space-delimited string.
 
     NAMES = 'KING QUEEN ROOK BISHOP KNIGHT PAWN'
     nms = NAMES.split()
