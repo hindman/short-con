@@ -18,7 +18,7 @@
 
 - Added docstrings.
 
-#### 1.2.2
+#### 1.2.5
 
 - README improvements.
 
