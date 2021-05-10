@@ -22,3 +22,8 @@
 
 - README improvements.
 
+#### 1.3.0
+
+- Changed signature to `cons(_clsname, **kwargs)` to avoid conflict when a
+  user's kwargs needs `name` as a key.
+

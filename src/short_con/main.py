@@ -69,15 +69,15 @@ def constants(name, attrs, value_style = None, bases = (object,), **attr_argumen
     # Return an instance holding the constants.
     return cls(*vals)
 
-def cons(name, **kwargs):
+def cons(_clsname, **kwargs):
     '''
     Returns a dict-like container of constants, as a frozen instance of an attrs class.
 
     Arguments:
-    name -- Class name.
+    _clsname -- Class name.
     **kwargs -- Passed as a dict to short_con.constants()
     '''
     # A convenience function when you want to create constants via kwargs
     # and you don't need to customize `bases` or `attr_arguments`.
-    return constants(name, kwargs)
+    return constants(_clsname, kwargs)
 
