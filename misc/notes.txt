@@ -1,0 +1,155 @@
+--------
+dev-notes: Dev notes
+--------
+
+Since developing short-con, I learned more about some additional (and
+under-documented) features of Python's enum module.
+
+    - You can mix in behaviors from other classes, of course. [Note that the
+      mixed-in classes cannot define enum members.]
+
+        class Multiplier:
+            def mult(self, n):
+                return self.value * n
+
+        class Demo(Multiplier, Enum):
+            a = 10
+            b = 20
+
+        Demo.a.mult(5)   # 50
+
+    - In addition, the last mixed-in class can be a type for the enum member
+      values themselves.
+
+        - The intended use case is for libraries that might have started with
+          primitive constants and want to switch to enums without breaking old
+          usages that remain tied to the primitive underlying values.
+
+            # Old code.
+            A = 10
+            B = 20
+
+        - The library decides to switch to a enum while prerving the int-like
+          capabilities of the members.
+
+            class Demo(Multiplier, int, Enum):
+                a = 10
+                b = 20
+
+        - The mixed-in behavior works as above:
+
+            Demo.a.mult(5)   # 50
+
+        - The enum members are both enum members and ints.
+
+            a = Demo.a
+            type(a)              # <enum 'Demo'>
+            str(a)               # 'Demo.a'
+            isinstance(a, int)   # True
+            a + 15               # 65
+
+        - That capability gets closer to eliminating the annoyance of having
+          constants that don't behave as their underlying values.
+
+    - Enums also support the following collection-like query behaviors:
+
+        # Query by enum member name/key.
+        Demo['a']
+
+        # Query by enum member value
+        Demo(10)
+
+    - Enums can be created in a compact syntax similar to namedtuples. The data
+      providing member names and values can be a space-delimited string of
+      names, a sequence of names, a sequence of name-value pairs, or a mapping.
+      If the data provides only names, the member values will be integers
+      starting at 1.
+
+        Demo = Enum('Demo', dict(a = 10, b = 20))
+
+    - And that syntax supports the data-type mix-ins discussed above:
+
+        Demo = Enum('Demo', dict(a = 10, b = 20), type = int)
+
+Why I still find short-con useful and convenient, in spite of all of that:
+
+    - The enum module imposes static-typing programming paridigms on Python.
+      But those strictures are not much help and, in the end, aren't very
+      strict.
+
+        - We started with a simple problem. Our program needs various magic
+          strings, numbers, etc. For maintainability, we make those values
+          named constants. And sometimes we want those constants to reside in a
+          collection-like object.
+
+        - But in order to get the desired collection behaviors, the enum module
+          forces us into a quasi-static-typing programming paradigm that is
+          somewhat alien to Python.
+
+        - Python is typically proud of its duck-typing basis. We don't insist
+          on an implementation or usages that pass static type checks.
+
+        - When applied to the realm of constants, the philsophy of duck-typing
+          implies that if you have a constant (FOO = 'bar'), we don't care
+          whether (a) someone uses our code by literally importing our `FOO`
+          name and using it when calling our code or (b) simply supplies the
+          'bar' string in some other manner. If the thing supplied by the user
+          looks and behaves, like 'bar', we are happy.
+
+        - But the enum module tells us that in order to get the benefits of a
+          collection of constants we must abandon duck-typing and instead
+          insist that our users supply constants only in their official form.
+
+        - Or, more corectly and ironically, the enum module instants that users
+          supply constants only in a form that happens to mimic (in duck-typing
+          fashion!) the behavior of an enum member.
+
+        - I never experience programming problems where those kinds of
+          quasi-strictures would actually help.
+
+    - Those strictures carry over into membership checks, of course:
+
+        Ex = Enum('Ex', 'a b c', type = int)
+
+        # These work.
+        Ex.a in Ex       # True
+        Ex['a']          # <Ex.a: 1>
+        Ex(1)            # <Ex.a: 1>
+
+        # But these are not supported.
+        'a' in Ex
+        1 in Ex
+        Ex.get(...)
+
+    - The strictures mean that we you need to serialize or deserialize data
+      having enum members, you must convert back and forth from the official
+      enum member to a primitive value of some kind (int, str, etc).
+
+        - But notice how the (common) need for serialization undermines the
+          whole purpose of the extra strictness in the first place.
+
+        - If we assess our constants with a duck-typing mindset, the serialized
+          primitive value is perfectly fine: it behaves like the thing we need.
+
+    - In the simplest and most common situation, I want constants with
+      self-documenting values.
+
+        # Wanted less often.
+        RED = 1
+        BLACK = 2
+
+        # Wanted more often.
+        RED = 'red'
+        BLACK = 'black'
+
+        - The short-con library's compact namedtuple-like syntax is is
+          optimized to support the latter. The enum library's compact syntax is
+          optimized for the former.
+
+    - Even though the enum library allows you to mix in the primitive data
+      type, that behavior comes at a cost: the constants in the collection must
+      all be of the same type.
+
+        - By constract, the short-con library views the collection as a
+          key-value mapping, so you can combine things as needed.
+
