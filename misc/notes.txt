@@ -1,4 +1,70 @@
 --------
+next-version: Next version
+--------
+
+Drop Python 2 support.
+
+Stop requiring that the user supply class names:
+
+    In using the short-con library, I find that I almost never case about the
+    name assigned to the attrs class, and the requirement to pass that name to
+    every constants() or cons() call is bureaucratic and annoying.
+
+    In v2, let's change the API:
+
+        # v1
+        def constants(name, attrs, value_style = None, ...):
+
+        # v2
+        def constants(attrs, cls_name = None, value_style = None, ...):
+
+    If cls_name is None:
+
+        - First, try to assign a cls_name by inspecting the calling code --
+          specifically the name of the variable to which the constants()
+          call is being assigned. Convert that name to StudlyCase.
+
+            from inspect import getframeinfo, stack
+
+            def constants(*xs, **kws):
+                cls_name = get_cls_name()
+                print(cls_name)
+
+            def get_cls_name():
+                caller = getframeinfo(stack()[2][0])
+                line = caller.code_context[0].strip()
+                var_name = line.split('=')[0].strip()
+                parts = var_name.split('_')
+                return ''.join(p.capitalize() for p in parts)
+
+            def main():
+                x = 123
+                y = 456
+                foo_bar_fubbs = constants(
+                    1,
+                    2,
+                    foo = 88,
+                    bar = 99,
+                )
+
+            main()
+
+        - If that fails for any reason, fall back to a generated name.
+
+            def class_names():
+                n = 1
+                while True:
+                    yield f'ShortCon{n}'
+                    n += 1
+
+            cls_name_gen = class_names()
+
+            def constants(...):
+                ...
+                cls_name = next(cls_name_gen)
+                ...
+
+--------
 dev-notes: Dev notes
 --------
 
