@@ -23,14 +23,12 @@ Radically simplified API:
                 kw: name-value pairs
 
         # More control.
-        constants(cls_name, attrs, val_func = None):
+        constants(attrs, cls_name = None, val_func = None):
             - User can control class name.
             - attrs must be a single argument:
                 - names (via list, tuple, or str that will be split)
                 - name-value pairs (via dict)
             - val_func: a callable with this form: f(NAME) => VALUE
-
-            constants('Foo', 'bar fubb blort', val_func = counter(3)
 
         # Like cons() but an enum.
         enumcons(*names, start = 0, cls_name = None, val_func = None)
@@ -38,7 +36,7 @@ Radically simplified API:
                 nm : start + i
                 for i, nm in enumerate(names)
             }
-            return constants(cls_name, kws, val_func = val_func)
+            return constants(kws, cls_name = cls_name, val_func = val_func)
 
 --------
 dev-notes: Dev notes
