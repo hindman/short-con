@@ -2,67 +2,43 @@
 next-version: Next version
 --------
 
-Drop Python 2 support.
+Drop attrs and Python 2. Switch to dataclass.
 
-Stop requiring that the user supply class names:
+Radically simplified API:
 
-    In using the short-con library, I find that I almost never case about the
-    name assigned to the attrs class, and the requirement to pass that name to
-    every constants() or cons() call is bureaucratic and annoying.
+    - When using short-con, I never care about the name assigned to the attrs
+      class, and the requirement to pass that name to every constants() or
+      cons() call is bureaucratic and annoying.
 
-    In v2, let's change the API:
+    - In v2, offer two functions: the easy default and an alternative for users
+      needing the v1 features.
 
-        # v1
-        def constants(name, attrs, value_style = None, ...):
+        # Easy default.
+        cons(*names, **kws):
+            - Provides core functionality with default usage.
+            - No ability to control class name.
+            - No ability to specify a value style.
+            - Accepts xs or kws, not both.
+                names: names as tuple[str]
+                kw: name-value pairs
 
-        # v2
-        def constants(attrs, cls_name = None, value_style = None, ...):
+        # More control.
+        constants(cls_name, attrs, val_func = None):
+            - User can control class name.
+            - attrs must be a single argument:
+                - names (via list, tuple, or str that will be split)
+                - name-value pairs (via dict)
+            - val_func: a callable with this form: f(NAME) => VALUE
 
-    If cls_name is None:
+            constants('Foo', 'bar fubb blort', val_func = counter(3)
 
-        - First, try to assign a cls_name by inspecting the calling code --
-          specifically the name of the variable to which the constants()
-          call is being assigned. Convert that name to StudlyCase.
-
-            from inspect import getframeinfo, stack
-
-            def constants(*xs, **kws):
-                cls_name = get_cls_name()
-                print(cls_name)
-
-            def get_cls_name():
-                caller = getframeinfo(stack()[2][0])
-                line = caller.code_context[0].strip()
-                var_name = line.split('=')[0].strip()
-                parts = var_name.split('_')
-                return ''.join(p.capitalize() for p in parts)
-
-            def main():
-                x = 123
-                y = 456
-                foo_bar_fubbs = constants(
-                    1,
-                    2,
-                    foo = 88,
-                    bar = 99,
-                )
-
-            main()
-
-        - If that fails for any reason, fall back to a generated name.
-
-            def class_names():
-                n = 1
-                while True:
-                    yield f'ShortCon{n}'
-                    n += 1
-
-            cls_name_gen = class_names()
-
-            def constants(...):
-                ...
-                cls_name = next(cls_name_gen)
-                ...
+        # Like cons() but an enum.
+        enumcons(*names, start = 0, cls_name = None, val_func = None)
+            kws = {
+                nm : start + i
+                for i, nm in enumerate(names)
+            }
+            return constants(cls_name, kws, val_func = val_func)
 
 --------
 dev-notes: Dev notes
