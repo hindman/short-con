@@ -31,12 +31,16 @@ Radically simplified API:
             - val_func: a callable with this form: f(NAME) => VALUE
 
         # Like cons() but an enum.
-        enumcons(*names, start = 0, cls_name = None, val_func = None)
-            kws = {
-                nm : start + i
-                for i, nm in enumerate(names)
-            }
-            return constants(kws, cls_name = cls_name, val_func = val_func)
+        enumcons(*names, start = 0, step = 1, **kws)
+            return constants(
+                {nm : start + step * i for i, nm in enumerate(names)},
+                **kws,
+            )
+
+        def counter(rng):
+            def f(name):
+                return next(rng)
+            return f
 
 --------
 dev-notes: Dev notes
