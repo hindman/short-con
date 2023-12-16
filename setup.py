@@ -25,6 +25,7 @@ project_dir  = dirname(realpath(__file__))
 
 reqs = [
     'attrs',
+    'kwexception',
     'six',
 ]
 
