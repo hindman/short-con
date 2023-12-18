@@ -1,103 +1,153 @@
 import pytest
 import sys
 
-from short_con.new import cons, constants
-from short_con.new import ERR_MULTIPLE, ERR_NONE, ERR_TYPE
+from short_con.new import cons, constants, enumcons, ShortConError
+from short_con.new import ERR_MULTIPLE, ERR_NONE, ERR_TYPE, DEFAULT_CLS_NAME
 
-@pytest.mark.skip(reason = 'TODO')
-def test_basic_creation(tr):
-    # Attribute names for some constants: as a str and as a list.
-    cps_str = tr.CHESS_PIECES
-    cps = cps_str.split()
-    cps_tuple = tuple(cps)
-    cps_dict = dict(zip(cps, cps))
-    exp_list = list(zip(cps, cps))
-    exp_dict = dict(zip(cps, cps))
+####
+# Chess pieces: data for constants in various formats.
+####
 
-    # We can create a constants() instance using a whitespace-delimited
-    # string, a list, or a tuple. And the resulting instance can be
-    # directly converted into the expected list or dict.
-    for arg in (cps, cps_str, cps_tuple, cps_dict):
-        Pieces = constants('Pieces', arg)
-        assert Pieces.QUEEN == 'QUEEN'
-        assert dict(Pieces) == exp_dict
-        assert attr.asdict(Pieces) == exp_dict
-        if sys.version_info.major < 3:
-            assert sorted(list(Pieces)) == sorted(exp_list)
-        else:
-            assert list(Pieces) == exp_list
+# Pieces and their values.
+CPS = dict(
+    king = 0,
+    queen = 9,
+    rook = 5,
+    bishop = 3,
+    knight = 3,
+    pawn = 1,
+)
 
-@pytest.mark.skip(reason = 'TODO')
+# Piece names as dict, tuple, list, one str, or multiple str.
+CPS_DICT = dict(zip(CPS, CPS))
+CPS_TUP = tuple(CPS)
+CPS_LIST = list(CPS)
+CPS_STR = ' '.join(CPS)
+CPS_STRS = [
+    ' '.join(CPS_TUP[0:2]),
+    ' '.join(CPS_TUP[2:5]),
+    ' '.join(CPS_TUP[5:6]),
+]
+
+####
+# Tests.
+####
+
 def test_cons(tr):
-    d = tr.PIECE_VALUES
-    PVals = cons('PVals', **d)
-    assert dict(PVals) == d
+    # Scenario: exercise cons() via keyword arguments, one str,
+    # or multiple str with various arrangements.
+    # The results should be the same in all cases.
+    scs = [
+        cons(**CPS_DICT),
+        cons(CPS_STR),
+        cons(*CPS_STRS),
+        cons(*CPS_LIST),
+    ]
+    for sc in scs:
+        assert dict(sc) == dict(scs[0])
 
-@pytest.mark.skip(reason = 'TODO')
+def test_constants(tr):
+    # Scenario: exercise constants() via dict, tuple, list, str.
+    # The results should be the same in all cases.
+    scs = [
+        constants(CPS_DICT),
+        constants(CPS_TUP),
+        constants(CPS_LIST),
+        constants(CPS_STR),
+    ]
+    for sc in scs:
+        assert dict(sc) == dict(scs[0])
+
+def test_enumcons(tr):
+    # Scenario: exercise enumcons() via one str,
+    # or multiple str with various arrangements.
+    # The results should be the same in all cases.
+    EXP = {nm : i + 1 for i, nm in enumerate(CPS_TUP)}
+    scs = [
+        enumcons(CPS_STR),
+        enumcons(*CPS_STRS),
+        enumcons(*CPS_LIST),
+    ]
+    for sc in scs:
+        assert dict(sc) == EXP
+
+def test_enumcons_custom(tr):
+    # Scenario: exercise enumcons() via custom start/step.
+    EXP = {nm : 100 + i * 5 for i, nm in enumerate(CPS_TUP)}
+    sc = enumcons(CPS_STR, start = 100, step = 5)
+    assert dict(sc) == EXP
+
+def test_cons_multiple(tr):
+    # Scenario: error if we supply both keyword and positional args.
+    with pytest.raises(ShortConError) as einfo:
+        cons(CPS_STR, **CPS_DICT)
+    e = einfo.value
+    assert e.msg == ERR_MULTIPLE
+
+def test_no_names(tr):
+    # Scenario: error if we supply no names.
+    with pytest.raises(ShortConError) as einfo1:
+        cons()
+    with pytest.raises(ShortConError) as einfo2:
+        constants([])
+    with pytest.raises(ShortConError) as einfo3:
+        enumcons()
+    for einfo in (einfo1, einfo2, einfo3):
+        e = einfo.value
+        assert e.msg == ERR_NONE
+
+def test_constants_custom_name(tr):
+    # Scenario: exercise constants() with custom class name.
+    CLS_NAME = 'Pieces'
+    sc1 = constants(CPS)
+    sc2 = constants(CPS, cls_name = CLS_NAME)
+    assert type(sc1).__name__ == DEFAULT_CLS_NAME
+    assert type(sc2).__name__ == CLS_NAME
+    assert dict(sc1) == dict(sc2)
+
+def test_constants_invalid_type(tr):
+    # Scenario: error if constants() is given an unsupported type.
+    with pytest.raises(ShortConError) as einfo:
+        constants(999)
+    e = einfo.value
+    assert e.msg == ERR_TYPE
+
 def test_dict_methods_added(tr):
-    d = tr.PIECE_VALUES
-    PVals = cons('PVals', **d)
-    # keys() and values().
-    ks = PVals.keys()
-    vs = PVals.values()
-    assert isinstance(ks, tuple)
-    assert isinstance(vs, tuple)
-    assert sorted(ks) == sorted(d)
-    assert sorted(vs) == sorted(d.values())
+    # Confirm that dict-like behaviors are added.
+    sc = cons(**CPS)
+    # Iteration, keys(), and values().
+    assert list(sc) == list(CPS.items())
+    assert sc.keys() == tuple(CPS.keys())
+    assert sc.values() == tuple(CPS.values())
+    # Getting values by name.
+    Q = 'queen'
+    F = 'fubb'
+    assert sc[Q] == sc.queen
+    assert sc[Q] == CPS[Q]
+    # Length and membership.
+    assert len(sc) == len(CPS)
+    assert Q in sc
+    assert F not in sc
     # get().
-    assert PVals.get('QUEEN') == d['QUEEN']
-    assert PVals.get('blort', 123) == 123
-    assert PVals.get('blort') is None
-    # Get item.
-    assert PVals['ROOK'] == d['ROOK']
-    with pytest.raises(KeyError):
-        PVals['blort']
-    # Length.
-    assert len(PVals) == len(d)
-    # Contains.
-    assert 'ROOK' in PVals
-    assert 'blort' not in PVals
+    assert sc.get(Q) == sc.queen
+    assert sc.get(Q) == CPS[Q]
+    assert sc.get(F) is None
+    assert sc.get(F, 99) == 99
 
-@pytest.mark.skip(reason = 'TODO')
 def test_dict_methods_not_added(tr):
-    # In this case, keys(), values(), get() are not added to the class.
-    d = dict(tr.PIECE_VALUES)
+    # Confirm that keys(), values(), get() are not added if they
+    # conflict with any of the attribute names.
+    d = dict(CPS)
     d.update(keys = 11, values = 22, get = 33)
-    PVals = cons('PVals', **d)
-    assert PVals.keys == 11
-    assert PVals.values == 22
-    assert PVals.get == 33
+    sc = cons(**d)
+    assert sc.keys == 11
+    assert sc.values == 22
+    assert sc.get == 33
 
-@pytest.mark.skip(reason = 'TODO')
-def test_value_styles(tr):
-    cps = tr.CHESS_PIECES
-
-    # Lower.
-    Pieces = constants('Pieces', cps, value_style = 'lower')
-    assert Pieces.QUEEN == 'queen'
-
-    # Upper.
-    Pieces = constants('Pieces', cps.lower(), value_style = 'upper')
-    assert Pieces.queen == 'QUEEN'
-
-    # Enum.
-    Pieces = constants('Pieces', cps, value_style = 'enum')
-    assert Pieces.KING == 1
-    assert Pieces.PAWN == 6
-
-    # Callable.
-    f = lambda i, name: '{}-{}'.format(name.lower(), i + 1)
-    Pieces = constants('Pieces', cps, value_style = f)
-    assert Pieces.KING == 'king-1'
-    assert Pieces.PAWN == 'pawn-6'
-
-@pytest.mark.skip(reason = 'TODO')
-def test_invalid_inputs(tr):
-    # Bad attrs argument.
-    with pytest.raises(TypeError, match = ERR_TYPE) as einfo:
-        Pieces = constants('Pieces', 123)
-
-    # Bad value_style.
-    with pytest.raises(ValueError, match = ERR_VALUE) as einfo:
-        Pieces = constants('Pieces', tr.CHESS_PIECES, value_style = 'fubb')
+def test_constants_val_func(tr):
+    # Scenario: exercise constants() with custom value function.
+    sc1 = constants(CPS_STR)
+    sc2 = constants(CPS_STR, val_func = str.upper)
+    assert dict(sc1) == CPS_DICT
+    assert dict(sc2) == {nm : nm.upper() for nm in CPS_TUP}
 

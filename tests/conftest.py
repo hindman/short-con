@@ -1,12 +1,10 @@
-from __future__ import absolute_import, unicode_literals, print_function
-
 import pytest
 
 @pytest.fixture
 def tr():
     return TestResource()
 
-class TestResource(object):
+class TestResource:
 
     CHESS_PIECES = 'KING QUEEN ROOK BISHOP KNIGHT PAWN'
 
@@ -19,12 +17,17 @@ class TestResource(object):
         PAWN = 1,
     )
 
-    def dump(self, val = None, label = None):
-        if label:
-            msg = '\n{} =>'.format(label)
-            print(msg)
-        else:
-            print()
-        print(val)
-        print()
+    @classmethod
+    def dump(cls, val = None, label = 'dump()', iterate = False):
+        fmt = '\n--------\n# {label} =>\n{val}'
+        msg = fmt.format(label = label, val = '' if iterate else val)
+        print(msg)
+        if iterate:
+            for x in val:
+                print(x)
+
+    @classmethod
+    def dumpj(cls, val = None, label = 'dumpj()', indent = 4):
+        val = json.dumps(val, indent = indent)
+        cls.dump(val, label)
 

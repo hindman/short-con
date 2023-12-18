@@ -2,40 +2,29 @@
 next-version: Next version
 --------
 
-Drop attrs and Python 2. Switch to dataclass.
+README.md
 
-Radically simplified API:
+CHANGES.md
 
-    - When using short-con, I never care about the name assigned to the attrs
-      class, and the requirement to pass that name to every constants() or
-      cons() call is bureaucratic and annoying.
+setup.py
 
-    - In v2, offer two functions: the easy default and an alternative for users
-      needing the v1 features.
+tox.ini [dataclasses added in Python 3.7]
 
-        # Easy default.
-        cons(*names, **kws):
-            - Provides core functionality with default usage.
-            - No ability to control class name.
-            - No ability to specify a value style.
-            - Accepts xs or kws, not both.
-                names: names as tuple[str]
-                kw: name-value pairs
+tasks.py
 
-        # More control.
-        constants(attrs, cls_name = None, val_func = None):
-            - User can control class name.
-            - attrs must be a single argument:
-                - names (via list, tuple, or str that will be split)
-                - name-value pairs (via dict)
-            - val_func: a callable with this form: f(NAME) => VALUE
+Delete main.py and test_main.py
 
-        # Like cons() but an enum.
-        enumcons(*names, start = 0, step = 1, **kws)
-            return constants(
-                {nm : start + step * i for i, nm in enumerate(names)},
-                **kws,
-            )
+Rename new.py and test_new.py.
+
+conftest.py: delete chess pieces data.
+
+Set up a new virtualenv.
+
+Get other projects on my computer working with new library.
+
+Version bump.
+
+Publish.
 
 --------
 dev-notes: Dev notes
