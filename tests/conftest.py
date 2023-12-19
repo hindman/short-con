@@ -6,17 +6,6 @@ def tr():
 
 class TestResource:
 
-    CHESS_PIECES = 'KING QUEEN ROOK BISHOP KNIGHT PAWN'
-
-    PIECE_VALUES = dict(
-        KING = 0,
-        QUEEN = 9,
-        ROOK = 5,
-        BISHOP = 3,
-        KNIGHT = 3,
-        PAWN = 1,
-    )
-
     @classmethod
     def dump(cls, val = None, label = 'dump()', iterate = False):
         fmt = '\n--------\n# {label} =>\n{val}'

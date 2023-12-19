@@ -2,24 +2,7 @@
 next-version: Next version
 --------
 
-Edit:
-    x README.md
-    x CHANGES.md
-    x setup.py
-    x tox.ini
-    - tasks.py [sync up with current version from another project]
-
-Delete main.py and test_main.py
-
-Rename new.py and test_new.py.
-
-conftest.py: delete chess pieces data.
-
-Set up a new virtualenv.
-
-Get test and tox running.
-
-Get other projects on my computer working with new library.
+Github workflows: set up so I can ignore tox on my dev box.
 
 Final editing pass.
 
