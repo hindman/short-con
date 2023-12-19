@@ -2,8 +2,6 @@
 next-version: Next version
 --------
 
-Github workflows: set up so I can ignore tox on my dev box.
-
 Final editing pass.
 
 Version bump.
