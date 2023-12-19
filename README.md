@@ -1,4 +1,4 @@
-## short-con: Constants collections without boilerplate
+## short-con: Constants collections without hassle
 
 #### Motivation
 
@@ -18,8 +18,8 @@ PAWN = 1
 ```
 
 At some point, you might need to operate on those constants in groups, so you
-add some derived constants. We've hardly gotten out of the gate and the process
-already seems a bit tedious.
+add some derived constants. We've hardly gotten out of the gate and the journey
+already seems tedious.
 
 ```python
 COLORS = (BLACK, WHITE)
@@ -44,118 +44,100 @@ Pieces.QUEEN        # Will this give us the value we want? No.
 Pieces.QUEEN.value  # Dig a level deeper, friend.
 ```
 
-Although there are use cases where such formalism might be desirable, in
-the vast majority of practical programming situations the intermediate object
-is just a hassle — a form of *robustness theater* rather than an actual best
+Although there are use cases where such formalism might be desirable, in the
+vast majority of practical programming situations the intermediate object is
+just a hassle — a form of *robustness theater* rather than an actual best
 practice with concrete benefits.
-
 
 #### An easier way
 
-A better approach is to take inspiration from the excellent [attrs
-library][attrs_url], which helps Python programmers create *classes without
-boilerplate*. The short-con project does the same for constants collections by
-providing a small wrapper around [attr.make_class][make_class_url].
-
-Constant names and values can be declared explicitly in two ways:
+The short-con project simplifies the creation of constants collections: just
+supply names and values via keyword arguments.
 
 ```python
-from short_con import constants, cons
+from short_con import cons
 
-# Via a dict.
-Pieces = constants('Pieces', dict(king = 0, queen = 9, rook = 5, bishop = 3, knight = 3, pawn = 1))
-
-# Via kwargs, using the cons() utility function.
-Pieces = cons('Pieces', king = 0, queen = 9, rook = 5, bishop = 3, knight = 3, pawn = 1)
+PIECES = cons(king = 0, queen = 9, rook = 5, bishop = 3, knight = 3, pawn = 1)
 ```
 
-Both `constants()` and `cons()` create an attrs-based class of the given name
-and return a frozen instance of it:
+Behind the scenes `cons()` defines a frozen dataclass and then returns an
+instance of that class.
 
 ```python
-Pieces.queen = 42   # Fails with attrs.FrozenInstanceError.
+Pieces.queen = 99   # Fails with FrozenInstanceError.
 ```
 
-The underlying values are directly accessible — no need to interact with some
+The underlying values are directly accessible — no need to interact with a
 bureaucratic object standing guard in the middle:
 
 ```python
-Pieces.queen == 9   # True
+PIECES.queen == 9  # True
 ```
 
 The object is directly iterable and convertible to other collections, in the
 manner of `dict.items()`:
 
 ```python
-for name, value in Pieces:
+for name, value in PIECES:
     print(name, value)
 
-d = dict(Pieces)
-tups = list(Pieces)
+d = dict(PIECES)
+tups = list(PIECES)
 ```
 
 The object also supports relevant read-only dict behaviors:
 
 ```python
 # Always supported.
-Pieces['queen']      # 9
-len(Pieces)          # 6
-'queen' in Pieces    # True
+PIECES['queen']      # 9
+len(PIECES)          # 6
+'queen' in PIECES    # True
 
-# Supported if the supplied attribute names do not conflict with the method names:
-Pieces.keys()        # ('king', 'queen', 'rook', 'bishop', 'knight', 'pawn')
-Pieces.values()      # (0, 9, 5, 3, 3, 1)
-Pieces.get('rook')   # 5
-Pieces.get('blort')  # None
+# Supported if the attribute names do not conflict with the method names:
+PIECES.keys()        # ('king', 'queen', 'rook', 'bishop', 'knight', 'pawn')
+PIECES.values()      # (0, 9, 5, 3, 3, 1)
+PIECES.get('rook')   # 5
+PIECES.get('blort')  # None
 ```
 
-For situations when the values are the same as (or can be derived from) the
-attribute names, usage is even more compact. Just supply names as a list,
-tuple, or space-delimited string.
+For situations when the values are the same as the attribute names, usage is
+even more compact: just supply names as positional arguments or via one or more
+space-delimited strings.
 
 ```python
-NAMES = 'KING QUEEN ROOK BISHOP KNIGHT PAWN'
-nms = NAMES.split()
-
-Pieces = constants('Pieces', NAMES)      # All of these do the same thing.
-Pieces = constants('Pieces', nms)
-Pieces = constants('Pieces', tuple(nms))
+COLORS = cons('black white')
+COLORS = cons('black', 'white')
 ```
 
-The name-based usages support a few stylistic conventions:
+The library also supports the creation of enum-like collections: supply the
+names and, optionally, start and step parameters to control the generation of
+the numeric values.
 
 ```python
-NAMES = 'KING QUEEN ROOK BISHOP KNIGHT PAWN'
-names = NAMES.lower()
+# Default values: 1, 2, 3.
+PETS = enumcons('dog cat parrot')
 
-Pieces = constants('Pieces', NAMES, value_style = 'lower') # Uppercase names, lowercase values.
-Pieces = constants('Pieces', names, value_style = 'upper') # The reverse.
-Pieces = constants('Pieces', NAMES, value_style = 'enum')  # An enumeration from 1 through N.
+# Or with custom values: 100, 90, 80.
+PETS = enumcons('dog cat parrot', start = 100, step = -10)
 ```
 
-Or the values can be computed from the names by supplying a two-argument
-callable that takes an index and name:
+Finally, the library provides a `constants()` function that supports (1) the
+ability to control the class name of the underlying dataclass, and (2) use
+cases where the constant values can be computed from the names. The first
+argument to `constant()` should be the names and values (via a dict) or just
+the names (via a list, tuple, or space-delimited str).
 
 ```python
-Pieces = constants('Pieces', NAMES, value_style = lambda i, name: f'{name.lower()}-{i + 1}')
-```
+COLORS = constants(
+    'black white',         # dict, list, tuple, or str
+    cls_name = 'Colors',
+    val_func = str.upper,  # Callable: f(NAME) => VALUE
+)
 
-Other customization of the attrs-based class can be passed through as well. The
-`constants()` function has the following signature. The `bases` and
-`attr_arguments` are passed directly through to
-[attr.make_class][make_class_url]. Note that the `cons()` utility function does
-not support such customizations. And neither function allows the user to get a
-non-frozen instance, which would be at odds with the purpose of the library.
-
-```python
-def constants(name, attrs, value_style = None, bases = (object,), **attr_arguments):
-    ...
+print(COLORS)  # Colors(black='BLACK', white='WHITE')
 ```
 
 ----
 
-[stackoverflow_url]: https://stackoverflow.com/questions/2682745
 [enum_url]: https://docs.python.org/3/library/enum.html
-[attrs_url]: https://www.attrs.org/en/stable/
-[make_class_url]: https://www.attrs.org/en/stable/api.html#attr.make_class
 

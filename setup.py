@@ -11,7 +11,7 @@ import sys
 project_name = 'short-con'
 package_name = project_name.replace('-', '_')
 repo_name    = project_name
-description  = 'Constants collections without boilerplate'
+description  = 'Constants collections without hassle'
 url          = 'https://github.com/hindman/' + repo_name
 author       = 'Monty Hindman'
 author_email = 'mhindman@gmail.com'
@@ -24,9 +24,7 @@ project_dir  = dirname(realpath(__file__))
 ####
 
 reqs = [
-    'attrs',
     'kwexception',
-    'six',
 ]
 
 extras = {
@@ -37,7 +35,7 @@ extras = {
     ],
     'dev' : [
         'invoke',
-        'ipython' if sys.version_info.major > 2 else 'ipython<6.0',
+        'ipython',
         'pycodestyle',
         'twine',
         'virtualenv',
@@ -61,8 +59,14 @@ classifiers = [
     'Intended Audience :: Developers',
     'License :: OSI Approved :: MIT License',
     'Operating System :: OS Independent',
-    'Programming Language :: Python :: 2.7',
     'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
     'Topic :: Software Development',
 ]
 
@@ -94,6 +98,7 @@ setup(
     install_requires = reqs,
     tests_require = extras['test'],
     extras_require = extras,
+    python_requires = '>=3.7',
     license = license,
     long_description = long_desc,
     long_description_content_type = long_desc_type,
