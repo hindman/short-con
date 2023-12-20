@@ -34,6 +34,7 @@ extras = {
         'tox',
     ],
     'dev' : [
+        'build',
         'invoke',
         'ipython',
         'pycodestyle',
