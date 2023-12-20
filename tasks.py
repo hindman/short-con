@@ -1,21 +1,5 @@
 #! /usr/bin/env python
 
-####
-#
-# General:
-#   inv [--dry] TASK [OPTIONS]
-#   inv --list
-#   inv --help TASK
-#
-# Tasks:
-#   inv tags
-#   inv test [--cov]
-#   inv dist [--publish] [--test]
-#   inv tox
-#   inv bump [--kind <major|minor|patch>] [--local]
-#
-####
-
 import subprocess
 import sys
 from glob import glob

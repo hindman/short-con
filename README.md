@@ -93,7 +93,7 @@ PIECES['queen']      # 9
 len(PIECES)          # 6
 'queen' in PIECES    # True
 
-# Supported if the attribute names do not conflict with the method names:
+# Supported if the attribute names do not conflict with the method names.
 PIECES.keys()        # ('king', 'queen', 'rook', 'bishop', 'knight', 'pawn')
 PIECES.values()      # (0, 9, 5, 3, 3, 1)
 PIECES.get('rook')   # 5
@@ -107,6 +107,8 @@ space-delimited strings.
 ```python
 COLORS = cons('black white')
 COLORS = cons('black', 'white')
+
+print(COLORS)  # ShortCon(black='black', white='white')
 ```
 
 The library also supports the creation of enum-like collections: supply the
@@ -114,11 +116,11 @@ names and, optionally, start and step parameters to control the generation of
 the numeric values.
 
 ```python
-# Default values: 1, 2, 3.
-PETS = enumcons('dog cat parrot')
+PETS1 = enumcons('dog cat parrot')
+PETS2 = enumcons('dog cat parrot', start = 100, step = -10)
 
-# Or with custom values: 100, 90, 80.
-PETS = enumcons('dog cat parrot', start = 100, step = -10)
+print(PETS1)  # ShortCon(dog=1, cat=2, parrot=3)
+print(PETS2)  # ShortCon(dog=100, cat=90, parrot=80)
 ```
 
 Finally, the library provides a `constants()` function that supports (1) the

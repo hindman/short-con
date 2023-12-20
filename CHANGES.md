@@ -34,8 +34,8 @@
 - Dropped support for Pythons earlier than 3.7.
 
 - Reworked the API to prioritize convenience: `cons()` and `enumcons()` offer
-  default behavior as easily as possible. And `constants()` allows the user to
-  control the name of the underlying dataclass (a required parameter in v1, but
-  I found I never cared about it) or to supply a callable to compute each
-  value from its name.
+  default behavior as easily as possible; and `constants()` allows the user to
+  control the name of the underlying dataclass (a required parameter in v1) or
+  to supply a callable to compute each value from its name (similar behavior
+  was in v1).
 

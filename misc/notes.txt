@@ -1,14 +1,4 @@
 --------
-next-version: Next version
---------
-
-Final editing pass.
-
-Version bump.
-
-Publish.
-
---------
 dev-notes: Dev notes
 --------
 
@@ -33,7 +23,8 @@ Activate and run tests:
         inv test
         inv tox
 
-    - With tox directly:
+    - With tox directly. Since setting up Github workflows for testing against
+      various version, I don't use tox locally.
 
         pyenv shell 3.9.4  3.8.9  ...
         tox

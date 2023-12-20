@@ -44,9 +44,11 @@ def _tup_to_names(tup):
 #   values from names.
 #
 # - cons(): offers the simplest usage pattern but no customization;
-#   accepts positional or keyword arguments, not both.
+#   accepts positional arguments (names only, with values to
+#   be set equal to names) or keyword arguments (names and values),
+#   not both.
 #
-# - enumcons(): similar to cons in offer simple usage; computes
+# - enumcons(): similar to cons in offering simple usage; computes
 #   values in an enum-like fashion.
 ####
 
