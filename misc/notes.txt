@@ -1,4 +1,24 @@
 --------
+next-release: Next release
+--------
+
+Support the simple creation of dataclasses:
+
+    - Default dataclass:
+        - Fields via positional or keyword args
+        - No control over cls_name or other dataclass parameters.
+
+        C1 = dc('op service status')
+        C2 = dc('op', 'service', 'status')
+        C3 = dc(op = int, service = str, status = float)
+
+    - Customizable dataclass:
+        - Fields must be declared in a single arg.
+        - Can set cls_name and dataclass parameters (via kws).
+
+        C4 = dclass(str|tuple|list|dict, cls_name = None, **kws)
+
+--------
 dev-notes: Dev notes
 --------
 
