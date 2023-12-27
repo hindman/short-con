@@ -1,3 +1,4 @@
+import dataclasses
 import pytest
 import sys
 
@@ -6,6 +7,7 @@ from short_con import (
     cons,
     constants,
     enumcons,
+    dc,
 )
 from short_con.main import (
     DEFAULT_CLS_NAME,
@@ -33,11 +35,7 @@ CPS_DICT = dict(zip(CPS, CPS))
 CPS_TUP = tuple(CPS)
 CPS_LIST = list(CPS)
 CPS_STR = ' '.join(CPS)
-CPS_STRS = [
-    ' '.join(CPS_TUP[0:2]),
-    ' '.join(CPS_TUP[2:5]),
-    ' '.join(CPS_TUP[5:6]),
-]
+CPS_STRS = ['king queen', 'rook bishop knight', 'pawn']
 
 ####
 # Tests.
@@ -160,4 +158,48 @@ def test_constants_val_func(tr):
     sc2 = constants(CPS_STR, val_func = str.upper)
     assert dict(sc1) == CPS_DICT
     assert dict(sc2) == {nm : nm.upper() for nm in CPS_TUP}
+
+def test_constants_frozen(tr):
+    # Exercise constants(frozen = __).
+    sc1 = constants(CPS_STR)
+    sc2 = constants(CPS_STR, frozen = False)
+    Q = 'QUEEN!'
+    F = 'FOO'
+
+    # Initial assertions.
+    assert sc1.queen == sc2.queen
+    assert sc1.queen != Q
+
+    # Scenario: by default, ShortCon instances are frozen.
+    with pytest.raises(dataclasses.FrozenInstanceError) as einfo:
+        sc1.queen = Q
+
+    # Scenario: but with frozen=False, the instance is modifiable.
+    sc2.queen = Q
+    sc2.foo = F
+    assert sc2.queen == Q
+    assert sc2.foo == F
+    assert sc1.queen != sc2.queen
+
+def test_dc(tr):
+    # Exercise dc().
+    FIELDS = ['name', 'age', 'power', 'other']
+    PARAMS = dict(name = 'Buzz', age = 33, power = 99.8)
+
+    # Setup two classes and instances.
+    Person1 = dc(*FIELDS)
+    Person2 = dc(*FIELDS, cls_name = 'Person', frozen = True)
+    p1 = Person1(**PARAMS)
+    p2 = Person2(**PARAMS)
+
+    # Check cls_name and repr().
+    assert str(p1) == "ShortCon(name='Buzz', age=33, power=99.8, other=None)"
+    assert str(p2) == "Person(name='Buzz', age=33, power=99.8, other=None)"
+
+    # Check mutability.
+    N = 100
+    p1.age = N
+    assert p1.age == N
+    with pytest.raises(dataclasses.FrozenInstanceError) as einfo:
+        p2.age = N
 

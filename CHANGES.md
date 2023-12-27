@@ -39,3 +39,10 @@
   to supply a callable to compute each value from its name (similar behavior
   was in v1).
 
+#### 2.1.0
+
+- Enhanced `constants()` to support the creation of non-frozen
+  dataclass instances.
+
+- Added `dc()` to support the creation of quick-and-dirty dataclasses.
+

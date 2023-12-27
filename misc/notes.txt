@@ -2,21 +2,7 @@
 next-release: Next release
 --------
 
-Support the simple creation of dataclasses:
-
-    - Default dataclass:
-        - Fields via positional or keyword args
-        - No control over cls_name or other dataclass parameters.
-
-        C1 = dc('op service status')
-        C2 = dc('op', 'service', 'status')
-        C3 = dc(op = int, service = str, status = float)
-
-    - Customizable dataclass:
-        - Fields must be declared in a single arg.
-        - Can set cls_name and dataclass parameters (via kws).
-
-        C4 = dclass(str|tuple|list|dict, cls_name = None, **kws)
+...
 
 --------
 dev-notes: Dev notes
@@ -66,6 +52,10 @@ Installing from test pypi:
 Tag file creation:
 
     inv tags
+
+--------
+design-notes: Design notes
+--------
 
 Since developing short-con, I learned more about some additional (and
 under-documented) features of Python's enum module.
@@ -217,4 +207,19 @@ Why I still find short-con useful and convenient, in spite of all of that:
 
         - By constract, the short-con library views the collection as a
           key-value mapping, so you can combine things as needed.
+
+Why not dclass()?
+
+    - When adding the dc() function, I considered adding dclass(). The former
+      would be analogous to cons() in prioritizing simple usage with default
+      settings; the latter would allow for more customization.
+
+    - The problem is that the dataclasses returned by dclass() had all-required
+      fields, which is frequently not what you want.
+
+    - And the attempt to remedy that deficiency made the API too complex: a
+      user would be better off just defining a dataclass.
+
+    - So I only added dc(), focusing on the quick-and-dirty use cases and
+      nothing more.
 

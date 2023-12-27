@@ -111,9 +111,11 @@ COLORS = cons('black', 'white')
 print(COLORS)  # ShortCon(black='black', white='white')
 ```
 
-The library also supports the creation of enum-like collections: supply the
-names and, optionally, start and step parameters to control the generation of
-the numeric values.
+#### Easier enums
+
+In the same spirit of reducing hassle, the library supports the creation of
+enum-like collections: supply the names and, optionally, start and step
+parameters to control the generation of the numeric values.
 
 ```python
 PETS1 = enumcons('dog cat parrot')
@@ -123,20 +125,42 @@ print(PETS1)  # ShortCon(dog=1, cat=2, parrot=3)
 print(PETS2)  # ShortCon(dog=100, cat=90, parrot=80)
 ```
 
-Finally, the library provides a `constants()` function that supports (1) the
-ability to control the class name of the underlying dataclass, and (2) use
-cases where the constant values can be computed from the names. The first
-argument to `constant()` should be the names and values (via a dict) or just
-the names (via a list, tuple, or space-delimited str).
+#### More control when needed
+
+The library also provides a `constants()` function that supports (1) the
+ability to control the class name of the underlying dataclass, (2) use cases
+where the constant values can be computed from the names, and (3) the ability
+to control whether the dataclass is frozen (default is true).
 
 ```python
 COLORS = constants(
-    'black white',         # dict, list, tuple, or str
+    'black white',         # Names/values (dict) or names (list, tuple, str)
     cls_name = 'Colors',
     val_func = str.upper,  # Callable: f(NAME) => VALUE
+    frozen = False,
 )
 
-print(COLORS)  # Colors(black='BLACK', white='WHITE')
+COLORS.black += '_'
+print(COLORS)  # Colors(black='BLACK_', white='WHITE')
+```
+
+#### Quick and dirty dataclasses
+
+Since we are in the business of making dataclasses, the library also provides a
+convenience function to create them with a simplicity analogous to the `cons()`
+function. The user provides the attributes names and, optionally, a class name
+or any other keyword arguments for `dataclasses.make_dataclass()`. The
+attributes of the returned dataclass are optional, with a default of `None`,
+and have a type of `typing.Any`.
+
+```python
+Person = dc('name age hobby')
+p = Person(name = 'Billy', age = 42)
+print(p)  # ShortCon(name='Billy', age=42, hobby=None)
+
+Soldier = dc('name', 'rank', 'serial', cls_name = 'Soldier', frozen = True)
+s = Soldier(name = 'Leonard', rank = 'Private')
+print(s)  # Soldier(name='Leonard', rank='Private', serial=None)
 ```
 
 ----

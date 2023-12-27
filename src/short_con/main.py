@@ -1,6 +1,7 @@
-
+import dataclasses
 import sys
-from dataclasses import make_dataclass
+import typing
+
 from kwexception import Kwexception
 
 ####
@@ -11,7 +12,7 @@ DEFAULT_CLS_NAME = 'ShortCon'
 
 ERR_MULTIPLE = 'Provide positional or keyword arguments, not both'
 ERR_NONE = 'No names/values given'
-ERR_TYPE = 'contants() argument must be a dict, str, list, or tuple'
+ERR_TYPE = 'constants() argument must be a dict, str, list, or tuple'
 
 ####
 # Error class.
@@ -37,7 +38,7 @@ def _tup_to_names(tup):
     ]
 
 ####
-# The libary's user-facing functions.
+# The libary's user-facing functions to create constants collections:
 #
 # - constants(): does most of the work; allows user to control
 #   name of underlying dataclass and to supply a function to compute
@@ -84,13 +85,14 @@ def enumcons(*names, start = 1, step = 1, **kws):
     }
     return constants(d, **kws)
 
-def constants(attrs, cls_name = None, val_func = None):
+def constants(attrs, cls_name = None, val_func = None, frozen = True):
     '''
     Returns a ShortCon collection of constants.
 
     Arguments:
-    attrs -- Dict mapping names to values or a tuple/list/string of names.
+    attrs -- Dict mapping names to values, or a tuple/list/str of names.
     cls_name -- Class name for the underlying dataclass instance.
+    frozen -- Bool controlling whether the dataclass will be frozen.
     val_func -- Callable to take a name and return corresponding value.
     '''
     # Set up two parallel lists: attribute names and instance values.
@@ -118,11 +120,7 @@ def constants(attrs, cls_name = None, val_func = None):
         raise ShortConError(ERR_NONE, attrs = attrs)
 
     # Define the dataclass.
-    cls = make_dataclass(
-        cls_name = cls_name or DEFAULT_CLS_NAME,
-        fields = names,
-        frozen = True,
-    )
+    cls = dc(*names, cls_name = cls_name, frozen = frozen)
 
     # Add support for:
     # - iteration
@@ -144,4 +142,27 @@ def constants(attrs, cls_name = None, val_func = None):
 
     # Return an instance holding the constants.
     return cls(*vals)
+
+####
+# The libary's user-facing function to create dataclasses.
+####
+
+def dc(*names, cls_name = None, **kws):
+    '''
+    Returns a dataclass with default settings and optional attributes.
+
+    Arguments:
+    *names -- Attribute names (fields will have typing.Any and default of None).
+    cls_name -- Name for the dataclass.
+    **kws -- Other keyword arguments passed to dataclasses.make_dataclass().
+    '''
+    fields = [
+        (nm, typing.Any, dataclasses.field(default = None))
+        for nm in _tup_to_names(names)
+    ]
+    return dataclasses.make_dataclass(
+        cls_name = cls_name or DEFAULT_CLS_NAME,
+        fields = fields,
+        **kws,
+    )
 
