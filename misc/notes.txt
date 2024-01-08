@@ -2,7 +2,35 @@
 next-release: Next release
 --------
 
-...
+Add defer() support support collections where some values
+depend on other values:
+
+    DB = cons(
+        directory = '/foo/bar/fubb',
+        file = 'blah.json',
+        path = defer('{directory}/{file}'),
+    )
+
+    - The argument passed to defer() is a format string or callable.
+
+    - The ultimate constant value is computed roughly like this:
+
+        # All names/values computed so far.
+        kws = {...}
+
+        # The arg supplied to defer().
+        f = ...
+
+        # The constant value.
+        if isinstance(f, str):
+            f = f.format
+        return f(**kws)
+
+    - If a short-con is given multiple deferred values, the
+      processing goes like this:
+
+        - First set up the non-deferred values.
+        - The compute each deferred value, in the order given.
 
 --------
 dev-notes: Dev notes
