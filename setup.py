@@ -15,7 +15,7 @@ description  = 'Constants collections without hassle'
 url          = 'https://github.com/hindman/' + repo_name
 author       = 'Monty Hindman'
 author_email = 'mhindman@gmail.com'
-license      = 'MIT'
+license_name = 'MIT'
 src_subdir   = 'src'
 project_dir  = dirname(realpath(__file__))
 
@@ -58,7 +58,6 @@ long_desc_type = 'text/markdown'
 classifiers = [
     'Development Status :: 5 - Production/Stable',
     'Intended Audience :: Developers',
-    'License :: OSI Approved :: MIT License',
     'Operating System :: OS Independent',
     'Programming Language :: Python :: 3',
     'Programming Language :: Python :: 3.7',
@@ -100,7 +99,7 @@ setup(
     tests_require = extras['test'],
     extras_require = extras,
     python_requires = '>=3.7',
-    license = license,
+    license = license_name,
     long_description = long_desc,
     long_description_content_type = long_desc_type,
     classifiers = classifiers,
