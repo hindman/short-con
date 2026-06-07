@@ -1,19 +1,21 @@
 import dataclasses
 import pytest
-import sys
 
 from short_con import (
     ShortConError,
     cons,
     constants,
     enumcons,
+    fmtcons,
     dc,
 )
 from short_con.main import (
     DEFAULT_CLS_NAME,
     ERR_MULTIPLE,
+    ERR_NAMES_TYPE,
     ERR_NONE,
-    ERR_TYPE,
+    ERR_UNRESOLVABLE,
+    ERR_FMT_TYPE,
 )
 
 ####
@@ -36,6 +38,26 @@ CPS_TUP = tuple(CPS)
 CPS_LIST = list(CPS)
 CPS_STR = ' '.join(CPS)
 CPS_STRS = ['king queen', 'rook bishop knight', 'pawn']
+
+####
+# Paths: data for fmtcons() tests.
+####
+
+PATHS_KWS = dict(
+    root = '/tmp',
+    bar = '{root}/bar',
+    foo = '{root}/foo',
+    foobuzz = '{foo}/buzz',
+    n = 10,
+)
+
+PATHS_EXP = dict(
+    root = '/tmp',
+    bar = '/tmp/bar',
+    foo = '/tmp/foo',
+    foobuzz = '/tmp/foo/buzz',
+    n = 10,
+)
 
 ####
 # Tests.
@@ -85,6 +107,15 @@ def test_enumcons_custom(tr):
     sc = enumcons(CPS_STR, start = 100, step = 5)
     assert dict(sc) == EXP
 
+def test_names_invalid(tr):
+    # Scenario: error when name arguments are not strings.
+    with pytest.raises(ShortConError) as einfo:
+        cons(99)
+    assert einfo.value.msg == ERR_NAMES_TYPE
+    with pytest.raises(ShortConError) as einfo:
+        enumcons(99)
+    assert einfo.value.msg == ERR_NAMES_TYPE
+
 def test_cons_multiple(tr):
     # Scenario: error if we supply both keyword and positional args.
     with pytest.raises(ShortConError) as einfo:
@@ -118,7 +149,7 @@ def test_constants_invalid_type(tr):
     with pytest.raises(ShortConError) as einfo:
         constants(999)
     e = einfo.value
-    assert e.msg == ERR_TYPE
+    assert e.msg == ERR_NAMES_TYPE
 
 def test_dict_methods_added(tr):
     # Confirm that dict-like behaviors are added.
@@ -202,4 +233,40 @@ def test_dc(tr):
     assert p1.age == N
     with pytest.raises(dataclasses.FrozenInstanceError) as einfo:
         p2.age = N
+
+def test_fmtcons(tr):
+    # Scenario: basic usage with plain strings, chained format strings,
+    # and non-string values.
+    sc = fmtcons(**PATHS_KWS)
+    assert dict(sc) == PATHS_EXP
+
+def test_fmtcons_order(tr):
+    # Scenario: result preserves declaration order even when dependency
+    # resolution requires processing entries out of order.
+    sc = fmtcons(bar = '{root}/bar', root = '/tmp')
+    assert list(sc) == [('bar', '/tmp/bar'), ('root', '/tmp')]
+
+def test_fmtcons_nonstring_in_format(tr):
+    # Scenario: non-string values can be referenced in format strings.
+    sc = fmtcons(n = 10, path = '{n}/data')
+    assert sc.n == 10
+    assert sc.path == '10/data'
+
+def test_fmtcons_unresolvable_cycle(tr):
+    # Scenario: error when format strings form a dependency cycle.
+    with pytest.raises(ShortConError) as einfo:
+        fmtcons(a = '{b}', b = '{a}')
+    assert einfo.value.msg == ERR_UNRESOLVABLE
+
+def test_fmtcons_unresolvable_missing(tr):
+    # Scenario: error when a format string references a nonexistent key.
+    with pytest.raises(ShortConError) as einfo:
+        fmtcons(a = '{nonexistent}')
+    assert einfo.value.msg == ERR_UNRESOLVABLE
+
+def test_constants_fmt_not_dict(tr):
+    # Scenario: user requests fmt=True but does not supply a dict.
+    with pytest.raises(ShortConError) as einfo:
+        constants('foo bar', fmt = True)
+    assert einfo.value.msg == ERR_FMT_TYPE
 

@@ -60,18 +60,18 @@ from short_con import cons
 PIECES = cons(king = 0, queen = 9, rook = 5, bishop = 3, knight = 3, pawn = 1)
 ```
 
-Behind the scenes `cons()` defines a frozen dataclass and then returns an
-instance of that class.
-
-```python
-Pieces.queen = 99   # Fails with FrozenInstanceError.
-```
-
-The underlying values are directly accessible — no need to interact with a
-bureaucratic object standing guard in the middle:
+Behind the scenes `cons()` defines a dataclass holding the values, which are
+are directly accessible — no need to interact with a bureaucratic object
+standing guard in the middle:
 
 ```python
 PIECES.queen == 9  # True
+```
+
+By default the dataclass is frozen:
+
+```python
+Pieces.queen = 99   # Fails with FrozenInstanceError.
 ```
 
 The object is directly iterable and convertible to other collections, in the
@@ -111,6 +111,35 @@ COLORS = cons('black', 'white')
 print(COLORS)  # ShortCon(black='black', white='white')
 ```
 
+#### Constants that build on each other
+
+Sometimes a constant's value depends on another constant in the same
+collection — file paths are a common example. The `fmtcons()` function handles
+this by treating string values as Python format strings and resolving them
+using the other values in the collection:
+
+```python
+from short_con import fmtcons
+
+PATHS = fmtcons(
+    root = '/tmp',
+    bar = '{root}/bar',
+    foo = '{root}/foo',
+    foobuzz = '{foo}/buzz',
+    foobarn = '{bar}/{n}',
+    n = 10,
+)
+
+PATHS.foobuzz  # '/tmp/foo/buzz'
+PATHS.n        # 10
+PATHS.foobarn  # '/tmp/bar/10'
+```
+
+Non-string values are used as-is and are also available as format-string
+references. Dependencies are resolved iteratively, so entries can appear in
+any order. The function raises if a format string references a nonexistent
+key, or if the references form a cycle.
+
 #### Easier enums
 
 In the same spirit of reducing hassle, the library supports the creation of
@@ -129,15 +158,17 @@ print(PETS2)  # ShortCon(dog=100, cat=90, parrot=80)
 
 The library also provides a `constants()` function that supports (1) the
 ability to control the class name of the underlying dataclass, (2) use cases
-where the constant values can be computed from the names, and (3) the ability
-to control whether the dataclass is frozen (default is true).
+where the constant values can be computed from the names, (3) the ability to
+control whether the dataclass is frozen, and (4) the ability to process values
+as format strings in the manner used by `fmtcons()`.
 
 ```python
 COLORS = constants(
-    'black white',         # Names/values (dict) or names (list, tuple, str)
-    cls_name = 'Colors',
-    val_func = str.upper,  # Callable: f(NAME) => VALUE
-    frozen = False,
+    'black white',         # Names/values (dict) or names (list, tuple, str).
+    cls_name = 'Colors',   # Default: ShortCon.
+    val_func = str.upper,  # Callable: f(NAME) => VALUE.
+    frozen = False,        # Default: True.
+    fmt = False,           # Default: False.
 )
 
 COLORS.black += '_'
